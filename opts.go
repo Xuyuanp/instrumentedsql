@@ -5,6 +5,25 @@ type opts struct {
 	Tracer
 	OpsExcluded map[string]struct{}
 	OmitArgs    bool
+	LabelMapper map[string]string
+}
+
+func (o *opts) queryLabel() string {
+	if o.LabelMapper != nil {
+		if label, ok := o.LabelMapper["query"]; ok {
+			return label
+		}
+	}
+	return "query"
+}
+
+func (o *opts) argsLabel() string {
+	if o.LabelMapper != nil {
+		if label, ok := o.LabelMapper["args"]; ok {
+			return label
+		}
+	}
+	return "args"
 }
 
 // Opt is a functional option type for the wrapped driver
@@ -51,5 +70,23 @@ func WithOmitArgs() Opt {
 func WithIncludeArgs() Opt {
 	return func(o *opts) {
 		o.OmitArgs = false
+	}
+}
+
+func WithQueryLabel(label string) Opt {
+	return func(o *opts) {
+		if o.LabelMapper == nil {
+			o.LabelMapper = make(map[string]string)
+		}
+		o.LabelMapper["query"] = label
+	}
+}
+
+func WithArgsLabel(label string) Opt {
+	return func(o *opts) {
+		if o.LabelMapper == nil {
+			o.LabelMapper = make(map[string]string)
+		}
+		o.LabelMapper["args"] = label
 	}
 }

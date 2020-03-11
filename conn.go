@@ -13,14 +13,14 @@ type wrappedConn struct {
 
 // Compile time validation that our types implement the expected interfaces
 var (
-	_ driver.Conn = wrappedConn{}
-	_ driver.ConnBeginTx = wrappedConn{}
+	_ driver.Conn               = wrappedConn{}
+	_ driver.ConnBeginTx        = wrappedConn{}
 	_ driver.ConnPrepareContext = wrappedConn{}
-	_ driver.Execer = wrappedConn{}
-	_ driver.ExecerContext = wrappedConn{}
-	_ driver.Pinger = wrappedConn{}
-	_ driver.Queryer = wrappedConn{}
-	_ driver.QueryerContext = wrappedConn{}
+	_ driver.Execer             = wrappedConn{}
+	_ driver.ExecerContext      = wrappedConn{}
+	_ driver.Pinger             = wrappedConn{}
+	_ driver.Queryer            = wrappedConn{}
+	_ driver.QueryerContext     = wrappedConn{}
 )
 
 func (c wrappedConn) Prepare(query string) (driver.Stmt, error) {
@@ -115,9 +115,9 @@ func (c wrappedConn) ExecContext(ctx context.Context, query string, args []drive
 	if !c.hasOpExcluded(OpSQLConnExec) {
 		span := c.GetSpan(ctx).NewChild(OpSQLConnExec)
 		span.SetLabel("component", "database/sql")
-		span.SetLabel("query", query)
+		span.SetLabel(c.queryLabel(), query)
 		if !c.OmitArgs {
-			span.SetLabel("args", formatArgs(args))
+			span.SetLabel(c.argsLabel(), formatArgs(args))
 		}
 		start := time.Now()
 		defer func() {
@@ -196,9 +196,9 @@ func (c wrappedConn) QueryContext(ctx context.Context, query string, args []driv
 	if !c.hasOpExcluded(OpSQLConnQuery) {
 		span := c.GetSpan(ctx).NewChild(OpSQLConnQuery)
 		span.SetLabel("component", "database/sql")
-		span.SetLabel("query", query)
+		span.SetLabel(c.queryLabel(), query)
 		if !c.OmitArgs {
-			span.SetLabel("args", formatArgs(args))
+			span.SetLabel(c.argsLabel(), formatArgs(args))
 		}
 		start := time.Now()
 		defer func() {
